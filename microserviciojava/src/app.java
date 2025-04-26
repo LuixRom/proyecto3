@@ -7,12 +7,27 @@ import java.util.stream.Collectors;
 
 public class app {
     public static void main(String[] args) throws IOException, SQLException {
-        Connection conn = DBconnection.connect();
-        if (conn == null) {
-            System.out.println("No se pudo conectar a la base de datos.");
-            return;
+        Connection conn = null;
+        for (int i = 0; i < 5; i++) {
+            try {
+                conn = DBconnection.connect();
+                if (conn != null && !conn.isClosed()) {
+                    System.out.println("Conexión exitosa a PostgreSQL.");
+                    break;
+                }
+            } catch (Exception e) {
+                System.out.println("Esperando conexión a PostgreSQL...");
+            }   
+        try {
+            Thread.sleep(3000); // espera 3 segundos antes de reintentar
+        } catch (InterruptedException ie) {
+            Thread.currentThread().interrupt();
         }
-
+    }
+    if (conn == null) {
+        System.out.println("No se pudo conectar a la base de datos.");
+        return;
+    }
         try (Statement stmt = conn.createStatement()) {
             stmt.execute("CREATE TABLE IF NOT EXISTS products (id SERIAL PRIMARY KEY, name VARCHAR(100))");
             stmt.execute("CREATE TABLE IF NOT EXISTS inventory (id SERIAL PRIMARY KEY, product_id INT REFERENCES products(id), quantity INT)");
