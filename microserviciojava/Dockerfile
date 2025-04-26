@@ -11,4 +11,4 @@ WORKDIR /app/src
 
 RUN javac -cp "../postgresql.jar" *.java
 
-CMD ["sh", "-c", "java -cp ../postgresql.jar:. app && java -cp ../postgresql.jar:. Seeder"]
+CMD ["java", "-cp", "../postgresql.jar:.", "app"]
