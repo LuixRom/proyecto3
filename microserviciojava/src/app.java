@@ -17,19 +17,22 @@ public class app {
                 }
             } catch (Exception e) {
                 System.out.println("Esperando conexión a PostgreSQL...");
-            }   
+            }
             try {
-                Thread.sleep(3000); 
+                Thread.sleep(3000);
             } catch (InterruptedException ie) {
                 Thread.currentThread().interrupt();
             }
         }
+
         if (conn == null) {
             System.out.println("No se pudo conectar a la base de datos.");
             return;
         }
+
         final Connection finalConn = conn;
-        try (Statement stmt = conn.createStatement()) {
+
+        try (Statement stmt = finalConn.createStatement()) {
             stmt.execute("CREATE TABLE IF NOT EXISTS products (id SERIAL PRIMARY KEY, name VARCHAR(100))");
             stmt.execute("CREATE TABLE IF NOT EXISTS inventory (id SERIAL PRIMARY KEY, product_id INT REFERENCES products(id), quantity INT)");
             stmt.execute("CREATE TABLE IF NOT EXISTS categories (id SERIAL PRIMARY KEY, category_name VARCHAR(100))");
@@ -43,7 +46,7 @@ public class app {
 
         server.createContext("/products", exchange -> {
             if ("GET".equals(exchange.getRequestMethod())) {
-                try (Statement stmt = conn.createStatement(); ResultSet rs = stmt.executeQuery("SELECT * FROM products")) {
+                try (Statement stmt = finalConn.createStatement(); ResultSet rs = stmt.executeQuery("SELECT * FROM products")) {
                     StringBuilder response = new StringBuilder("[");
                     boolean first = true;
                     while (rs.next()) {
@@ -63,7 +66,7 @@ public class app {
                 try (BufferedReader reader = new BufferedReader(new InputStreamReader(exchange.getRequestBody(), StandardCharsets.UTF_8))) {
                     String body = reader.lines().collect(Collectors.joining());
                     String name = body.replaceAll(".*\\\"name\\\":\\\"(.*?)\\\".*", "$1");
-                    try (PreparedStatement ps = conn.prepareStatement("INSERT INTO products (name) VALUES (?)")) {
+                    try (PreparedStatement ps = finalConn.prepareStatement("INSERT INTO products (name) VALUES (?)")) {
                         ps.setString(1, name);
                         ps.executeUpdate();
                         exchange.sendResponseHeaders(201, 0);
@@ -87,7 +90,7 @@ public class app {
                     try (BufferedReader reader = new BufferedReader(new InputStreamReader(exchange.getRequestBody(), StandardCharsets.UTF_8))) {
                         String body = reader.lines().collect(Collectors.joining());
                         String name = body.replaceAll(".*\\\"name\\\":\\\"(.*?)\\\".*", "$1");
-                        try (PreparedStatement ps = conn.prepareStatement("UPDATE products SET name=? WHERE id=?")) {
+                        try (PreparedStatement ps = finalConn.prepareStatement("UPDATE products SET name=? WHERE id=?")) {
                             ps.setString(1, name);
                             ps.setInt(2, id);
                             ps.executeUpdate();
@@ -97,7 +100,7 @@ public class app {
                         exchange.sendResponseHeaders(500, 0);
                     }
                 } else if ("DELETE".equals(exchange.getRequestMethod())) {
-                    try (PreparedStatement ps = conn.prepareStatement("DELETE FROM products WHERE id=?")) {
+                    try (PreparedStatement ps = finalConn.prepareStatement("DELETE FROM products WHERE id=?")) {
                         ps.setInt(1, id);
                         ps.executeUpdate();
                         exchange.sendResponseHeaders(200, 0);
@@ -115,7 +118,7 @@ public class app {
 
         server.createContext("/inventory", exchange -> {
             if ("GET".equals(exchange.getRequestMethod())) {
-                try (Statement stmt = conn.createStatement(); ResultSet rs = stmt.executeQuery("SELECT i.id, p.name, i.quantity FROM inventory i JOIN products p ON i.product_id = p.id")) {
+                try (Statement stmt = finalConn.createStatement(); ResultSet rs = stmt.executeQuery("SELECT i.id, p.name, i.quantity FROM inventory i JOIN products p ON i.product_id = p.id")) {
                     StringBuilder response = new StringBuilder("[");
                     boolean first = true;
                     while (rs.next()) {
@@ -136,7 +139,7 @@ public class app {
                     String body = reader.lines().collect(Collectors.joining());
                     int productId = Integer.parseInt(body.replaceAll(".*\\\"productId\\\":(\\d+).*", "$1"));
                     int qty = Integer.parseInt(body.replaceAll(".*\\\"cantidad\\\":(\\d+).*", "$1"));
-                    try (PreparedStatement ps = conn.prepareStatement("INSERT INTO inventory (product_id, quantity) VALUES (?, ?)")) {
+                    try (PreparedStatement ps = finalConn.prepareStatement("INSERT INTO inventory (product_id, quantity) VALUES (?, ?)")) {
                         ps.setInt(1, productId);
                         ps.setInt(2, qty);
                         ps.executeUpdate();
@@ -154,7 +157,7 @@ public class app {
 
         server.createContext("/categories", exchange -> {
             if ("GET".equals(exchange.getRequestMethod())) {
-                try (Statement stmt = conn.createStatement(); ResultSet rs = stmt.executeQuery("SELECT * FROM categories")) {
+                try (Statement stmt = finalConn.createStatement(); ResultSet rs = stmt.executeQuery("SELECT * FROM categories")) {
                     StringBuilder response = new StringBuilder("[");
                     boolean first = true;
                     while (rs.next()) {
@@ -174,7 +177,7 @@ public class app {
                 try (BufferedReader reader = new BufferedReader(new InputStreamReader(exchange.getRequestBody(), StandardCharsets.UTF_8))) {
                     String body = reader.lines().collect(Collectors.joining());
                     String categoryName = body.replaceAll(".*\\\"category_name\\\":\\\"(.*?)\\\".*", "$1");
-                    try (PreparedStatement ps = conn.prepareStatement("INSERT INTO categories (category_name) VALUES (?)")) {
+                    try (PreparedStatement ps = finalConn.prepareStatement("INSERT INTO categories (category_name) VALUES (?)")) {
                         ps.setString(1, categoryName);
                         ps.executeUpdate();
                         exchange.sendResponseHeaders(201, 0);
@@ -191,7 +194,7 @@ public class app {
 
         server.createContext("/suppliers", exchange -> {
             if ("GET".equals(exchange.getRequestMethod())) {
-                try (Statement stmt = conn.createStatement(); ResultSet rs = stmt.executeQuery("SELECT * FROM suppliers")) {
+                try (Statement stmt = finalConn.createStatement(); ResultSet rs = stmt.executeQuery("SELECT * FROM suppliers")) {
                     StringBuilder response = new StringBuilder("[");
                     boolean first = true;
                     while (rs.next()) {
@@ -211,7 +214,7 @@ public class app {
                 try (BufferedReader reader = new BufferedReader(new InputStreamReader(exchange.getRequestBody(), StandardCharsets.UTF_8))) {
                     String body = reader.lines().collect(Collectors.joining());
                     String supplierName = body.replaceAll(".*\\\"supplier_name\\\":\\\"(.*?)\\\".*", "$1");
-                    try (PreparedStatement ps = conn.prepareStatement("INSERT INTO suppliers (supplier_name) VALUES (?)")) {
+                    try (PreparedStatement ps = finalConn.prepareStatement("INSERT INTO suppliers (supplier_name) VALUES (?)")) {
                         ps.setString(1, supplierName);
                         ps.executeUpdate();
                         exchange.sendResponseHeaders(201, 0);
@@ -225,6 +228,7 @@ public class app {
                 exchange.getResponseBody().close();
             }
         });
+
         server.setExecutor(null);
         server.start();
     }
