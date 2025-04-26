@@ -1,0 +1,98 @@
+{
+    "info": {
+        "name": "Usuarios y Direcciones API",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+        {
+            "name": "Get Users",
+            "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                    "raw": "http://127.0.0.1:8000/user",
+                    "protocol": "http",
+                    "host": [
+                        "127.0.0.1"
+                    ],
+                    "port": "8000",
+                    "path": [
+                        "user"
+                    ]
+                }
+            }
+        },
+        {
+            "name": "Create User",
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n    \"firstname\": \"Luis\",\n    \"lastname\": \"Romero\",\n    \"phonenumber\": \"999999999\",\n    \"email\": \"luis@example.com\",\n    \"age\": 25\n}"
+                },
+                "url": {
+                    "raw": "http://127.0.0.1:8000/user",
+                    "protocol": "http",
+                    "host": [
+                        "127.0.0.1"
+                    ],
+                    "port": "8000",
+                    "path": [
+                        "user"
+                    ]
+                }
+            }
+        },
+        {
+            "name": "Get Addresses",
+            "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                    "raw": "http://127.0.0.1:8000/address",
+                    "protocol": "http",
+                    "host": [
+                        "127.0.0.1"
+                    ],
+                    "port": "8000",
+                    "path": [
+                        "address"
+                    ]
+                }
+            }
+        },
+        {
+            "name": "Create Address",
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n    \"user_id\": 1,\n    \"address_line\": \"Av. Siempre Viva 742\",\n    \"city\": \"Lima\",\n    \"country\": \"Per\\u00fa\"\n}"
+                },
+                "url": {
+                    "raw": "http://127.0.0.1:8000/address",
+                    "protocol": "http",
+                    "host": [
+                        "127.0.0.1"
+                    ],
+                    "port": "8000",
+                    "path": [
+                        "address"
+                    ]
+                }
+            }
+        }
+    ]
+}
