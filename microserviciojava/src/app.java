@@ -18,16 +18,17 @@ public class app {
             } catch (Exception e) {
                 System.out.println("Esperando conexión a PostgreSQL...");
             }   
-        try {
-            Thread.sleep(3000); // espera 3 segundos antes de reintentar
-        } catch (InterruptedException ie) {
-            Thread.currentThread().interrupt();
+            try {
+                Thread.sleep(3000); 
+            } catch (InterruptedException ie) {
+                Thread.currentThread().interrupt();
+            }
         }
-    }
-    if (conn == null) {
-        System.out.println("No se pudo conectar a la base de datos.");
-        return;
-    }
+        if (conn == null) {
+            System.out.println("No se pudo conectar a la base de datos.");
+            return;
+        }
+        final Connection finalConn = conn;
         try (Statement stmt = conn.createStatement()) {
             stmt.execute("CREATE TABLE IF NOT EXISTS products (id SERIAL PRIMARY KEY, name VARCHAR(100))");
             stmt.execute("CREATE TABLE IF NOT EXISTS inventory (id SERIAL PRIMARY KEY, product_id INT REFERENCES products(id), quantity INT)");
